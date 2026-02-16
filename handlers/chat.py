@@ -5,12 +5,12 @@ Handles incoming Telegram messages.
 
 import logging
 from aiogram import Router, F
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.types import Message
 from aiogram.filters import CommandStart, Command
 
 from services.memory_service import save_message, get_last_messages, clear_history
 from services.openai_service import generate_response
-from services.prompt_service import get_system_message, get_welcome_message, get_registration_url
+from services.prompt_service import get_system_message
 
 logger = logging.getLogger(__name__)
 
@@ -19,24 +19,8 @@ router = Router()
 
 @router.message(CommandStart())
 async def handle_start(message: Message) -> None:
-    """Handle /start command - send welcome and save to memory."""
-    user_id = message.from_user.id
-
-    # Clear old history for fresh start
-    await clear_history(user_id)
-
-    # Send welcome message with registration button
-    welcome = get_welcome_message()
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(
-            text="РЕГИСТРАЦИЯ ↗️",
-            url=get_registration_url()
-        )]
-    ])
-    await message.answer(welcome, reply_markup=keyboard)
-
-    # Save welcome as assistant message so AI remembers it
-    await save_message(user_id, "assistant", welcome)
+    """Handle /start command - silent, clear history."""
+    await clear_history(message.from_user.id)
 
 
 @router.message(Command("clear"))
